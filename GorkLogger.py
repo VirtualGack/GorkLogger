@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import tkinter.font as tkFont
 import datetime
 
@@ -6,10 +7,36 @@ root = tk.Tk()
 
 ### screen config ###
 
-root.geometry("500x250") # sets screen size
-root.title("GorkLogger") # sets the title of the app
-root.config(bg="#09330d") #sets the root background colour
-root.resizable(False, False) #prevents wuindow from being resized
+root.geometry("700x400") # sets screen size
+root.minsize(620, 380)
+root.title("Call Logger") # sets the title of the app
+root.config(bg="#0C0C0C") #sets the root background colour
+root.resizable(True, True) #prevents wuindow from being resized
+
+### theme + style ###
+
+style = ttk.Style(root)
+style.theme_use("clam")
+
+FONT_UI = ("Segoe UI", 24)
+FONT_TITLE = ("Segoe UI", 24, "bold")
+
+root.option_add("*Font", FONT_UI)
+
+# colour palette
+BG = '#0C0C0C'
+PANEL ='#481E14'
+TEXT_BG ='#0C0C0C'
+TEXT_FG ="#ECAB9C"
+ACCENT ='#9B3922'
+
+root.configure(bg=BG)
+
+# style tweaks
+style.configure("Card.TFrame", background=PANEL)
+style.configure("CardTitle.TLabel", background=PANEL, foreground=ACCENT, font=FONT_TITLE)
+style.configure("Status.TLabel", background=BG, foreground=ACCENT)
+style.configure("Caller.TEntry", fieldbackground=TEXT_BG, background=BG, foreground=TEXT_FG, insertcolor=ACCENT)
 
 ### set variables ###
 
@@ -31,31 +58,43 @@ def save_text():
         file.write(f"\n### {current_time} ###\n{callerid}\n{notes_string}\n") # stamps current time, line break(lb) stamps caller ID, lb adds the call notes to the txt file
         caller_answer.delete(0, tk.END) # deletes the text in caller ID box ready for next call
         notes.delete("1.0", tk.END) # deletes the text in notes box ready for next call
-        file.close() # closes the file when we are finished.
+        file.close() # closes the file when we are finished.    
+    caller_answer.focus_set() #sets focus to the caller entry upon submission.
+
+def submit_event(event=None): # adding event to bind to key press
+    save_text()
+
+# Key bind ctrl + enter to submit
+root.bind("<Control-Return>", submit_event)
 
 ### GUI layout ###
 
-root.columnconfigure(0, weight=1) 
-root.rowconfigure(0, weight=1)
+# Root grid (3 rows)
+root.grid_columnconfigure(0,weight=1)
+root.grid_rowconfigure(0,weight=0)
+root.grid_rowconfigure(1,weight=1)
+root.grid_rowconfigure(2,weight=0)
 
-frame = tk.Frame(root, bg="#09330d")
-frame.grid(row= 0, column= 0, sticky="nsew")
+# row 1
 
-frame.columnconfigure(0, weight= 1)
-frame.columnconfigure(1, weight= 1)
-frame.rowconfigure(0, weight= 1)
-frame.rowconfigure(1, weight=4)
+top = ttk.Frame(root, style="Card.TFrame", padding=12)
+top.grid(row=0, column=0, sticky='ew', padx=12, pady=(12, 8))
 
-caller_question = tk.Label(frame, text="Caller =>",  bg="#9cbda1", font=font)
-caller_question.grid(row= 0, column= 0, sticky="nsew", pady=5, padx=5)
+top.grid_columnconfigure(0, weight=0)
+top.grid_columnconfigure(1, weight=1)
 
-caller_answer = tk.Entry(frame, bg="#f7f7e8", fg="#09330d", font=font, textvariable= callerid)
-caller_answer.grid(row= 0, column= 1, sticky="nsew", pady=5, padx= 10)
+caller_question = ttk.Label(top, text="Caller =>", style="CardTitle.TLabel").grid(row=0, column=0, sticky='w', padx=(0, 10))
+caller_answer = ttk.Entry(top, textvariable=callerid, style="Caller.TEntry")
+caller_answer.grid(row=0, column=1, sticky='ew')
 
-notes = tk.Text(root,  height=8, bg="#f7f7e8", fg="#09330d", font=font)
-notes.grid(row= 1, column= 0, columnspan=2, sticky="nsew")
+# row 2
 
-submit_btn = tk.Button(root, text="End Call", font=font, bg="#09330D", fg="#9cbda1", command=save_text )
-submit_btn.place(rely=1.0, relx=1.0, anchor=tk.SE)
+mid = ttk.Frame(root, style="Card.TFrame", padding=12)
+mid.grid(row=1, column=0, sticky='nsew', padx=12, pady=(0, 8))
+mid.grid_columnconfigure(0, weight=1)
+mid.grid_rowconfigure(0, weight=1)
+
+notes = tk.Text(mid, wrap="word", bg=TEXT_BG, fg=TEXT_FG, insertbackground=TEXT_FG, bd=0, highlightthickness=0, font=FONT_UI)
+notes.grid(row=0, column=0, sticky='nsew')
 
 root.mainloop()
